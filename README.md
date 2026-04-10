@@ -1,70 +1,55 @@
-# LocalAI Service API Documentation
+# LocalAI
 
-LocalAI is a sidecar service tailored for the ShotStack platform, providing AI-powered security auditing, website structure analysis, and code generation using Ollama models.
+A dedicated sidecar service providing AI-powered security auditing, website structure analysis, and code generation capabilities via Ollama models.
 
-## 🚀 Quick Start
+## Overview
 
-1.  **Install dependencies:** `npm install`
-2.  **Environment Setup:** Copy `.env.example` to `.env` and configure your `OLLAMA_URL`.
-3.  **Run:** `node index.js`
+LocalAI serves as an intelligence layer processing complex source code and design files into actionable insights. It leverages a robust architecture capable of chunking large codebases, managing streaming responses, and providing an OpenAI-compatible interface.
 
-## 🔑 Authentication
+## Key Features
 
-All requests must include the `x-api-key` header.
-Example: `x-api-key: your_secret_key`
+- **Content-Based Caching:** Automatic code normalization for deterministic cache hits.
+- **Streaming & Chunking:** Real-time Server-Sent Events (SSE) support for heavy project audits.
+- **Queue Management:** Controlled concurrency handling to prevent model inference bottlenecks.
+- **Figma Extraction:** Direct translation of Figma designs to website architectures.
+- **V1 Compatibility:** OpenAI-compatible wrapper endpoint for seamless ecosystem integration.
 
-## 📡 API Endpoints
+## Installation
 
-### 1. Security Audit (Streaming)
+1. Install dependencies
+```bash
+npm install
+```
 
-**`POST /audit-project-stream`**
+2. Environment configuration
+```bash
+cp .env.example .env
+# Set API_KEY and OLLAMA URL parameters
+```
 
-Extracts and analyzes a project ZIP file in real-time.
+3. Start the service
+```bash
+node index.js
+```
 
-- **Body (multipart/form-data):**
-  - `projectZip`: The ZIP file to audit.
-- **Response:** `text/event-stream` (SSE)
-  - Events: `extraction`, `ai_tahlil`, `chunk`, `complete`, `error`.
+## Core Endpoints
 
-### 2. General Generation
+### Auditing
+- `POST /audit-project`: Batch security audit from ZIP archives.
+- `POST /audit-project-stream`: Streaming execution of project security audits (SSE).
 
-**`POST /generate`**
+### Generation
+- `POST /generate`: Prompt-based code and schema generation.
+- `POST /generate-chunked`: Progressive component generation and assembly.
+- `POST /figma-to-site`: Automated layout extraction from Figma designs.
 
-Generates code or design schemas based on a role and prompt.
+### Integration & Monitoring
+- `POST /v1/chat/completions`: OpenAI-compatible completions endpoint.
+- `GET /stats`: Real-time instance metrics (memory utilization, queue bounds, cache hits).
+- `POST /clear-cache`: Purges in-memory caching layers.
 
-- **Body (JSON):**
-  - `role`: The AI role (e.g., `designer`, `security_expert`).
-  - `prompt`: The text description or source data.
-- **Response:** JSON object with the generated content.
-- **Performance:** Cached by default for identical prompt/role pairs.
+## Authentication
 
-### 3. Service Statistics
-
-**`GET /stats`**
-
-Provides real-time monitoring data.
-
-- **Response:**
-  ```json
-  {
-    "uptime": 3600,
-    "memory": { "rss": 120000000, "heapTotal": 80000000, ... },
-    "queue": { "active": 0, "waiting": 0, "concurrency": 2 },
-    "cache": { "hits": 15, "misses": 5, "hitRate": "75.0%", "entries": 20 }
-  }
-  ```
-
-### 4. Cache Management
-
-**`POST /clear-cache`**
-
-Wipes all in-memory AI and file caches.
-
----
-
-## 🛠️ Key Features
-
-- **Content-Based Caching:** Automatic normalization of code (ignoring whitespace/comments) to maximize cache hit rates.
-- **Robust JSON Parsing:** Multi-stage extraction logic to handle malformed AI responses.
-- **Queue Management:** Controlled concurrency via `p-queue` to prevent Ollama overloading.
-- **Performance Monitoring:** Granular response time tracking and timeout alerts (120s threshold).
+All endpoints require authentication headers. Provide your secret token using one of the following methods:
+- Header: `x-api-key: <token>`
+- Header: `Authorization: Bearer <token>`
